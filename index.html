@@ -1,0 +1,693 @@
+<div id="my-floating-banner" style="position: fixed; top: 4; left: 25%; transform: translateX(-1%); width: 50%; height: 100px; background-image: url('sada.png'); background-size: contain; background-position: center; background-repeat: no-repeat; z-index: 5;"></div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DUETREMIX PRO - OFFLINE READY</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            background-color: #05070f;
+            color: #f3f4f6;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+        .preview-box {
+            background: #0f172a;
+            border: 2px dashed #334155;
+            box-shadow: inset 0 4px 20px rgba(0,0,0,0.6);
+        }
+        .layout-side-by-side { display: flex; flex-direction: row; }
+        .layout-side-by-side .video-container { width: 50%; height: 100%; }
+
+        .layout-top-bottom { display: flex; flex-direction: column; }
+        .layout-top-bottom .video-container { width: 100%; height: 50%; }
+
+        .layout-pip { position: relative; display: block; }
+        .layout-pip .main-video-box { width: 100%; height: 100%; }
+        .layout-pip .camera-box { position: absolute; bottom: 16px; right: 16px; width: 35%; height: 35%; z-index: 10; border: 2px solid #22d3ee; border-radius: 16px; }
+
+        /* ২০টি ডাইনামিক ফিল্টারের CSS ইফেক্টস */
+        .filter-normal { filter: none !important; }
+        .filter-beauty { filter: brightness(1.15) contrast(0.95) saturate(1.05) !important; }
+        .filter-vintage { filter: sepia(0.5) contrast(0.9) brightness(0.95) !important; }
+        .filter-pinkish { filter: hue-rotate(330deg) saturate(1.1) brightness(1.05) !important; }
+        .filter-bw { filter: grayscale(1) contrast(1.2) !important; }
+        .filter-cyber { filter: hue-rotate(90deg) saturate(1.5) brightness(1.1) !important; }
+        .filter-warm { filter: sepia(0.2) saturate(1.2) contrast(1) !important; }
+        .filter-cool { filter: hue-rotate(180deg) saturate(1.1) !important; }
+        .filter-dramatic { filter: contrast(1.4) brightness(0.8) !important; }
+        .filter-fade { filter: opacity(0.85) saturate(0.8) contrast(0.9) !important; }
+        .filter-retro { filter: sepia(0.3) hue-rotate(340deg) saturate(1.3) !important; }
+        .filter-neon { filter: saturate(2) contrast(1.1) brightness(1.1) !important; }
+        .filter-invert { filter: invert(0.9) !important; }
+        .filter-blur { filter: blur(1px) !important; }
+        .filter-bright { filter: brightness(1.3) !important; }
+        .filter-dark { filter: brightness(0.7) contrast(1.1) !important; }
+        .filter-gold { filter: sepia(0.4) saturate(1.8) brightness(1) !important; }
+        .filter-cold { filter: saturate(0.7) hue-rotate(190deg) brightness(1.05) !important; }
+        .filter-shadow { filter: contrast(1.5) drop-shadow(4px 4px 10px black) !important; }
+        .filter-soft { filter: brightness(1.05) blur(0.3px) saturate(0.95) !important; }
+
+        /* 📐 লম্বালম্বি পপ-আপ অ্যানিমেশন (Vertical Strip Slide) */
+        .vertical-panel {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateX(20px);
+            opacity: 0;
+            pointer-events: none;
+        }
+        .vertical-panel.active {
+            transform: translateX(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        /* কাস্টম স্ক্রোলবার একদম চিকন করার জন্য */
+        .custom-scroll::-webkit-scrollbar {
+            width: 3px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 10px;
+        }
+
+        /* ওপরে আইকন বার ডানে-বামে স্ক্রোল করার জন্য বিশেষ হাইড স্ক্রোলবার */
+        .scroll-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scroll-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* ডাইনামিক লাইভ ব্যাকগ্রাউন্ড মিক্সচার */
+        .bg-mix-1 { background: linear-gradient(45deg, #1e1b4b, #311042) !important; }
+        .bg-mix-2 { background: linear-gradient(135deg, #0f172a, #1e293b) !important; }
+        .bg-mix-3 { background: linear-gradient(180deg, #020617, #172554) !important; }
+
+/* ব্যানার এবং ব্যাকগ্রাউন্ড স্টাইল */
+#banner {
+    width: 100%;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 1s ease-in-out;
+    background-size: cover;
+}
+body {
+    transition: background 1s ease-in-out;
+}
+
+    </style>
+</head>
+<body class="h-screen flex flex-col justify-between p-3 max-w-md mx-auto md:max-w-4xl selection:bg-cyan-500">
+<div id="banner" class="mb-4">
+    <h1 class="text-white text-2xl">স্বাগতম!</h1>
+</div>
+    <header class="flex justify-between items-center bg-slate-900/90 backdrop-blur-md p-3 rounded-2xl shadow-xl border border-slate-800/60">
+        <div class="flex items-center gap-2">
+            <span id="recDot" class="w-2.5 h-2.5 bg-red-500 rounded-full hidden animate-pulse"></span>
+            <h1 class="text-sm font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-teal-400">DUETREMIX PRO</h1>
+        </div>
+        <div class="flex items-center gap-2">
+            <div id="recTimer" class="hidden text-xs font-mono bg-red-950/80 text-red-400 border border-red-900/50 px-2 py-0.5 rounded-full font-bold">00:00</div>
+            <div class="bg-slate-800/80 px-2.5 py-0.5 rounded-full text-[10px] text-cyan-400 font-mono" id="layoutStatus">Side-by-Side</div>
+        </div>
+    </header>
+
+    <main class="flex-1 my-3 bg-black rounded-3xl overflow-hidden shadow-2xl relative border border-slate-800 flex items-center justify-center">
+        <div id="countdownOverlay" class="absolute inset-0 bg-black/80 z-50 flex items-center justify-center text-7xl font-black text-cyan-400 hidden"></div>
+
+        <div id="videoWorkspace" class="w-full h-full layout-side-by-side gap-1 p-1 relative">
+            
+            <div class="video-container main-video-box preview-box rounded-2xl flex flex-col items-center justify-center relative overflow-hidden">
+                <video id="mainVideo" class="w-full h-full object-cover hidden filter-normal" loop playsinline></video>
+                <div class="absolute inset-0 flex flex-col items-center justify-center text-slate-600 text-center" id="mainVideoPlaceholder">
+                    <i class="fa-solid fa-video text-2xl mb-1 text-slate-700"></i>
+                    <span class="text-[11px] font-semibold">Main Video</span>
+                </div>
+                
+                <div id="liveIconPanel" class="absolute bottom-3 left-3 flex items-center gap-2 bg-black/50 backdrop-blur-md px-2 py-1 rounded-full border border-slate-700/40 z-30 hidden">
+                    <button id="iconPlayPause" onclick="toggleMainVideoPlay()" class="w-7 h-7 rounded-full bg-slate-900 text-white flex items-center justify-center"><i class="fa-solid fa-pause text-[10px]"></i></button>
+                    <button id="iconMute" onclick="toggleMainVideoMute()" class="w-7 h-7 rounded-full bg-slate-900 text-white flex items-center justify-center"><i class="fa-solid fa-volume-high text-[10px]"></i></button>
+                    <button onclick="resetMainVideo()" class="w-7 h-7 rounded-full bg-slate-900 text-white flex items-center justify-center"><i class="fa-solid fa-rotate-right text-[10px]"></i></button>
+                </div>
+            </div>
+
+            <div id="cameraContainer" class="video-container camera-box preview-box rounded-2xl flex flex-col items-center justify-center relative overflow-hidden">
+                <video id="cameraVideo" class="w-full h-full object-cover hidden filter-normal" autoplay muted playsinline></video>
+                <div class="absolute inset-0 flex flex-col items-center justify-center text-slate-600" id="cameraPlaceholder">
+                    <i class="fa-solid fa-camera text-2xl mb-1 text-slate-700"></i>
+                    <span class="text-[11px] font-semibold">Camera Off</span>
+                </div>
+
+                <div id="liveTextOverlay" class="absolute bottom-10 left-1/2 transform -translate-x-1/2 bg-black/70 px-3 py-1 rounded border border-white/10 text-white text-xs font-bold hidden text-center z-20"></div>
+                <div id="liveEmojiOverlay" class="absolute top-1/4 left-1/3 text-4xl hidden z-20"></div>
+                <div id="liveMaskOverlay" class="absolute top-1/3 left-1/2 transform -translate-x-1/2 text-5xl select-none pointer-events-none hidden z-20">🎭</div>
+<div class="absolute inset-x-1 top-1.5 flex gap-1.5 bg-black/60 backdrop-blur-sm p-1 rounded-xl border border-white/5 z-40 overflow-x-auto scroll-hide whitespace-nowrap">
+                    <button onclick="toggleVerticalPanel('audioPanel')" class="w-8 h-8 rounded-lg bg-slate-950 text-emerald-400 inline-flex flex-shrink-0 items-center justify-center" title="Mixer"><i class="fa-solid fa-sliders text-xs"></i></button>
+                    <button onclick="toggleVerticalPanel('filterPanel')" class="w-8 h-8 rounded-lg bg-slate-950 text-purple-400 inline-flex flex-shrink-0 items-center justify-center" title="Filters"><i class="fa-solid fa-wand-magic-sparkles text-xs"></i></button>
+                    <button onclick="toggleVerticalPanel('layoutPanel')" class="w-8 h-8 rounded-lg bg-slate-950 text-cyan-400 inline-flex flex-shrink-0 items-center justify-center" title="Layout"><i class="fa-solid fa-grip text-xs"></i></button>
+                    <button onclick="toggleVerticalPanel('textPanel')" class="w-8 h-8 rounded-lg bg-slate-950 text-amber-400 inline-flex flex-shrink-0 items-center justify-center" title="Text"><i class="fa-solid fa-font text-xs"></i></button>
+                    <button onclick="toggleVerticalPanel('emojiPanel')" class="w-8 h-8 rounded-lg bg-slate-950 text-pink-400 inline-flex flex-shrink-0 items-center justify-center" title="Emoji"><i class="fa-solid fa-face-smile text-xs"></i></button>
+                    <button onclick="toggleVerticalPanel('voicePanel')" class="w-8 h-8 rounded-lg bg-slate-950 text-indigo-400 inline-flex flex-shrink-0 items-center justify-center" title="Voice Effects"><i class="fa-solid fa-microphone-lines text-xs"></i></button>
+                    <button onclick="toggleVerticalPanel('maskPanel')" class="w-8 h-8 rounded-lg bg-slate-950 text-rose-400 inline-flex flex-shrink-0 items-center justify-center" title="Masks"><i class="fa-solid fa-masks-theater text-xs"></i></button>
+                    <button onclick="toggleVerticalPanel('backgroundPanel')" class="w-8 h-8 rounded-lg bg-slate-950 text-teal-400 inline-flex flex-shrink-0 items-center justify-center" title="Backgrounds"><i class="fa-solid fa-image text-xs"></i></button>
+                    <button onclick="toggleVerticalPanel('effectPanel')" class="w-8 h-8 rounded-lg bg-slate-950 text-orange-400 inline-flex flex-shrink-0 items-center justify-center" title="Effects"><i class="fa-solid fa-bolt text-xs"></i></button>
+                </div>
+
+                <div id="audioPanel" class="vertical-panel absolute right-1.5 top-12 bottom-1.5 w-16 bg-slate-950/95 border border-slate-800 rounded-xl p-1 z-50 flex flex-col justify-between items-center">
+                    <i class="fa-solid fa-circle-xmark text-slate-500 text-xs cursor-pointer my-1" onclick="closeAllPanels()"></i>
+                    <div class="flex-1 flex flex-col justify-around items-center w-full text-[8px]">
+                        <div class="flex flex-col items-center"><span class="text-emerald-400 font-bold">MIC</span><input type="range" id="micVolSlider" min="0" max="2" step="0.1" value="1" oninput="updateVolume('mic', this.value)" class="h-14 accent-emerald-500 bg-slate-800 rounded" style="writing-mode: vertical-lr; direction: rtl;"><span id="micVolPreview">100%</span></div>
+                        <div class="flex flex-col items-center"><span class="text-cyan-400 font-bold">MAIN</span><input type="range" id="mainVolSlider" min="0" max="2" step="0.1" value="1" oninput="updateVolume('main', this.value)" class="h-14 accent-cyan-500 bg-slate-800 rounded" style="writing-mode: vertical-lr; direction: rtl;"><span id="mainVolPreview">100%</span></div>
+                    </div>
+                </div>
+
+                <div id="filterPanel" class="vertical-panel absolute right-1.5 top-12 bottom-1.5 w-24 bg-slate-950/95 border border-slate-800 rounded-xl p-1.5 z-50 flex flex-col">
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-1 mb-1"><span class="text-[9px] font-bold text-purple-400">FILTERS</span><i class="fa-solid fa-circle-xmark text-slate-500 text-xs cursor-pointer" onclick="closeAllPanels()"></i></div>
+                    <div class="flex-1 overflow-y-auto custom-scroll space-y-1 text-left">
+                        <button onclick="applyFilter('normal')" class="w-full text-[9px] bg-slate-900 p-1 rounded text-slate-300 truncate">Normal</button>
+                        <button onclick="applyFilter('beauty')" class="w-full text-[9px] bg-slate-900 p-1 rounded text-slate-300 truncate">Beauty</button>
+                        <button onclick="applyFilter('vintage')" class="w-full text-[9px] bg-slate-900 p-1 rounded text-slate-300 truncate">Vintage</button>
+                        <button onclick="applyFilter('pinkish')" class="w-full text-[9px] bg-slate-900 p-1 rounded text-slate-300 truncate">Pinkish</button>
+                        <button onclick="applyFilter('bw')" class="w-full text-[9px] bg-slate-900 p-1 rounded text-slate-300 truncate">B&W Movie</button>
+                        <button onclick="applyFilter('cyber')" class="w-full text-[9px] bg-slate-900 p-1 rounded text-slate-300 truncate">Cyberpunk</button>
+                        <button onclick="applyFilter('warm')" class="w-full text-[9px] bg-slate-900 p-1 rounded text-slate-300 truncate">Warm</button>
+                        <button onclick="applyFilter('cool')" class="w-full text-[9px] bg-slate-900 p-1 rounded text-slate-300 truncate">Cool Style</button>
+                        <button onclick="applyFilter('dramatic')" class="w-full text-[9px] bg-slate-900 p-1 rounded text-slate-300 truncate">Dramatic</button>
+                        <button onclick="applyFilter('fade')" class="w-full text-[9px] bg-slate-900 p-1 rounded text-slate-300 truncate">Fade Film</button>
+                        <button onclick="applyFilter('retro')" class="w-full text-[9px] bg-slate-900 p-1 rounded text-slate-300 truncate">Retro VHS</button>
+                        <button onclick="applyFilter('neon')" class="w-full text-[9px] bg-slate-900 p-1 rounded text-slate-300 truncate">Neon Glow</button>
+                        <button onclick="applyFilter('invert')" class="w-full text-[9px] bg-slate-900 p-1 rounded text-slate-300 truncate">Invert X</button>
+                        <button onclick="applyFilter('blur')" class="w-full text-[9px] bg-slate-900 p-1 rounded text-slate-300 truncate">Dream Blur</button>
+                        <button onclick="applyFilter('bright')" class="w-full text-[9px] bg-slate-900 p-1 rounded text-slate-300 truncate">Daylight</button>
+                        <button onclick="applyFilter('dark')" class="w-full text-[9px] bg-slate-900 p-1 rounded text-slate-300 truncate">Cinematic</button>
+                        <button onclick="applyFilter('gold')" class="w-full text-[9px] bg-slate-900 p-1 rounded text-slate-300 truncate">Gold Premium</button>
+                        <button onclick="applyFilter('cold')" class="w-full text-[9px] bg-slate-900 p-1 rounded text-slate-300 truncate">Cold Ice</button>
+                        <button onclick="applyFilter('shadow')" class="w-full text-[9px] bg-slate-900 p-1 rounded text-slate-300 truncate">Shadow Map</button>
+                        <button onclick="applyFilter('soft')" class="w-full text-[9px] bg-slate-900 p-1 rounded text-slate-300 truncate">Soft Light</button>
+                    </div>
+                </div>
+
+                <div id="layoutPanel" class="vertical-panel absolute right-1.5 top-12 bottom-1.5 w-20 bg-slate-950/95 border border-slate-800 rounded-xl p-1 flex flex-col">
+                    <i class="fa-solid fa-circle-xmark text-slate-500 text-xs cursor-pointer text-center my-1" onclick="closeAllPanels()"></i>
+                    <div class="flex-1 flex flex-col gap-1 overflow-y-auto custom-scroll">
+                        <button onclick="changeLayout('side-by-side', 'Side-by-Side')" class="layout-btn w-full bg-cyan-600 text-white text-[8px] py-2 rounded">Side-Side</button>
+                        <button onclick="changeLayout('top-bottom', 'Top-Bottom')" class="layout-btn w-full bg-slate-900 text-slate-400 text-[8px] py-2 rounded">Top-Down</button>
+                        <button onclick="changeLayout('pip', 'PIP mode')" class="layout-btn w-full bg-slate-900 text-slate-400 text-[8px] py-2 rounded">PIP Mode</button>
+                        <button onclick="changeLayout('landscape', 'Landscape')" class="layout-btn w-full bg-slate-900 text-slate-400 text-[8px] py-2 rounded">16:9 Cam</button>
+                    </div>
+                </div>
+
+                <div id="textPanel" class="vertical-panel absolute right-1.5 top-12 bottom-1.5 w-28 bg-slate-950/95 border border-slate-800 rounded-xl p-1.5 z-50 flex flex-col gap-2">
+                    <div class="flex justify-between items-center"><span class="text-[9px] text-amber-400 font-bold">TEXT BAR</span><i class="fa-solid fa-circle-xmark text-slate-500 text-xs cursor-pointer" onclick="closeAllPanels()"></i></div>
+                    <textarea id="textInput" placeholder="টাইপ করুন..." class="flex-1 w-full bg-slate-900 text-slate-200 border border-slate-700 rounded p-1 text-[10px] focus:outline-none resize-none"></textarea>
+                    <button onclick="saveLiveText()" class="w-full bg-emerald-500 text-black font-black text-[10px] py-1.5 rounded shadow active:scale-95 transition">SAVE TEXT</button>
+                </div>
+
+                <div id="emojiPanel" class="vertical-panel absolute right-1.5 top-12 bottom-1.5 w-16 bg-slate-950/95 border border-slate-800 rounded-xl p-1 z-50 flex flex-col">
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-1 mb-1"><i class="fa-solid fa-trash text-red-400 text-[10px] cursor-pointer" onclick="clearLiveEmoji()"></i><i class="fa-solid fa-circle-xmark text-slate-500 text-xs cursor-pointer" onclick="closeAllPanels()"></i></div>
+                    <div id="emojiListContainer" class="flex-1 overflow-y-auto custom-scroll grid grid-cols-2 gap-1 text-center text-sm p-0.5"></div>
+                </div>
+
+                <div id="voicePanel" class="vertical-panel absolute right-1.5 top-12 bottom-1.5 w-24 bg-slate-950/95 border border-slate-800 rounded-xl p-1.5 z-50 flex flex-col">
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-1 mb-1"><span class="text-[9px] font-bold text-indigo-400">VOICE (30)</span><i class="fa-solid fa-circle-xmark text-slate-500 text-xs cursor-pointer" onclick="closeAllPanels()"></i></div>
+                    <div id="voiceListContainer" class="flex-1 overflow-y-auto custom-scroll space-y-1"></div>
+                </div>
+
+                <div id="maskPanel" class="vertical-panel absolute right-1.5 top-12 bottom-1.5 w-24 bg-slate-950/95 border border-slate-800 rounded-xl p-1.5 z-50 flex flex-col">
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-1 mb-1"><span class="text-[9px] font-bold text-rose-400">MASKS (40)</span><i class="fa-solid fa-circle-xmark text-slate-500 text-xs cursor-pointer" onclick="closeAllPanels()"></i></div>
+                    <div id="maskListContainer" class="flex-1 overflow-y-auto custom-scroll space-y-1"></div>
+                </div>
+<div id="backgroundPanel" class="vertical-panel absolute right-1.5 top-12 bottom-1.5 w-24 bg-slate-950/95 border border-slate-800 rounded-xl p-1.5 z-50 flex flex-col">
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-1 mb-1"><span class="text-[9px] font-bold text-teal-400">BG MIX (50)</span><i class="fa-solid fa-circle-xmark text-slate-500 text-xs cursor-pointer" onclick="closeAllPanels()"></i></div>
+                    <div id="backgroundListContainer" class="flex-1 overflow-y-auto custom-scroll space-y-1"></div>
+                </div>
+
+                <div id="effectPanel" class="vertical-panel absolute right-1.5 top-12 bottom-1.5 w-24 bg-slate-950/95 border border-slate-800 rounded-xl p-1.5 z-50 flex flex-col">
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-1 mb-1"><span class="text-[9px] font-bold text-orange-400">EFFECTS (70)</span><i class="fa-solid fa-circle-xmark text-slate-500 text-xs cursor-pointer" onclick="closeAllPanels()"></i></div>
+                    <div id="effectListContainer" class="flex-1 overflow-y-auto custom-scroll space-y-1"></div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-slate-900/90 backdrop-blur-md p-3 rounded-2xl border border-slate-800/60 space-y-2">
+        <div class="grid grid-cols-2 gap-2">
+            <button id="startCamBtn" onclick="initHardware()" class="bg-slate-800 text-emerald-400 py-2 px-2 rounded-xl text-xs font-bold border border-slate-700/50 flex items-center justify-center gap-1.5">
+                <i class="fa-solid fa-circle-check"></i> ১. হার্ডওয়্যার অন করুন
+            </button>
+            <label class="bg-slate-800 text-purple-400 py-2 px-2 rounded-xl text-xs font-bold border border-slate-700/50 flex items-center justify-center gap-1.5 cursor-pointer text-center">
+                <i class="fa-solid fa-cloud-arrow-up"></i> ২. মেইন ভিডিও আপলোড
+                <input type="file" id="videoUpload" accept="video/*" class="hidden" onchange="handleVideoUpload(this)">
+            </label>
+        </div>
+
+        <div class="bg-slate-950/80 p-1.5 rounded-xl border border-slate-800 flex items-center justify-between gap-2">
+            <select id="recQuality" class="bg-slate-900 border border-slate-700 text-slate-300 text-[10px] rounded-lg px-1.5 py-1.5 font-medium">
+                <option value="high" selected>HD Quality (1080p)</option>
+                <option value="medium">Standard (720p)</option>
+                <option value="480p">480p Quality</option>
+                <option value="360p">360p Quality</option>
+                <option value="240p">240p Quality</option>
+                <option value="144p">144p Quality</option>
+            </select>
+            <div class="flex-1 flex gap-2">
+                <button id="recBtn" onclick="startCountdown()" class="flex-1 bg-gradient-to-r from-red-600 to-rose-600 text-white py-2 rounded-xl text-xs font-black tracking-wider">ডুয়েট রেকর্ড</button>
+                <button id="stopRecBtn" onclick="stopRecording()" class="bg-slate-800 text-slate-500 px-3 rounded-xl text-xs font-bold" disabled>স্টপ</button>
+            </div>
+        </div>
+    </footer>
+<!-- ২৬৬ নম্বর লাইনে এটি বসান -->
+<div id="iphone-container" style="text-align: center; margin: 6px;">
+    <img src="iphone_frame.png" id="camera-trigger" onclick="openCamera()" style="width: 10px; cursor: pointer;">
+    <input type="file" id="audio-upload" accept="audio/mp3" onchange="loadAudio(event)" style="display: none;">
+</div>
+    <canvas id="recordCanvas" class="hidden"></canvas>
+
+    <script>
+        const workspace = document.getElementById('videoWorkspace');
+        const statusText = document.getElementById('layoutStatus');
+        const mainVideo = document.getElementById('mainVideo');
+        const cameraVideo = document.getElementById('cameraVideo');
+        const recordCanvas = document.getElementById('recordCanvas');
+        const ctx = recordCanvas.getContext('2d');
+        
+        let localStream = null, videoTrack = null, audioCtx = null;
+        let micGainNode = null, mainVideoGainNode = null, destAudioNode = null;
+        let mediaRecorder = null, recordedChunks = [];
+        let canvasLoopId = null, timerInterval = null, secondsRecorded = 0;
+        let currentLayout = 'side-by-side', currentFilter = 'normal';
+        let currentText = "", currentEmoji = "", currentVoiceEffect = "Normal", currentMask = "None";
+        const logoImg = new Image();
+        logoImg.src = 'logo.png'; // আপনার লোগো ফাইলের নাম নিশ্চিত করবেন
+        const emojis = [
+            '😊','🔥','😂','❤️','👍','😮','😢','🎉','👏','👑','💯','✨','🚀','💡','🌟','⚡','💥','🎵','🎬','🎮',
+            '😍','🤩','🤔','😎','🤫','🥵','🥶','🦾','🙌','🤝','🙏','👀','👅','💋','💔','💖','💗','💙','💚','💛',
+            '💜','🖤','🤍','🤎','🧡','🔴','🔵','🟢','🟡','🦄','🦁','🐱','🐶','🐾','🌿','🌸','🌎','🌈','☀️','🌙',
+            '⭐','☁️','⚡','❄️','🍓','🍉','🍕','🍔','🍟','🍿','☕','🥤','🍺','🥂','🚗','🏍️','✈️','🏔️','🏖️','🏠',
+            '⏰','💵','💎','🎁','🎈','✉️','📈','🔒','📌','📍','🔨','🛡️','🔮','🧼','🔑','🛒','🛍️','🧸','🕶️','🦄',
+            '👒','👔','👗','🎒','📱','💻','🖥️','📺','📷','🎙️','🎧','🎨','🎪','🎫','🏆','⚽','🏀','🎸','🎹','🎺',
+            '🍇','🍍','🥞','🍙','🍦','🍩','🍪','🍬','🍫','🍯','🍷','🧉','🗺️','🏝️','💈','🗽','🏰','🎡','🎢','🛶',
+            '🛸','🛩️','🛸','🚨','🛑','⚓','🎰','🎲','🎳','♟️','🎯','🧩','🎪','🎭','🎤','🎬','🎧','🎼','🎹','🥁'
+        ];
+
+        const emojiListContainer = document.getElementById('emojiListContainer');
+        emojis.forEach(emo => {
+            const span = document.createElement('span');
+            span.className = "cursor-pointer p-1 active:scale-125 transition block text-base";
+            span.innerText = emo;
+            span.onclick = () => applyLiveEmoji(emo);
+            emojiListContainer.appendChild(span);
+        });
+
+        const voiceContainer = document.getElementById('voiceListContainer');
+        const voiceTypes = ["Normal", "Echo Pro", "Chipmunk", "Deep Robot", "Studio Bass", "Helium", "Monster", "Telephone", "Concert Hall", "Radio FX", "Underwater", "Vibrato", "Mega Mic", "Alien Space", "Cave Echo", "Chorus", "Distortion", "Pitch Up", "Pitch Down", "AM Radio", "Electronic", "Vintage Mic", "Flanger", "Phaser", "Reverb Gold", "Cyber Voice", "Ghostly", "Stadium", "Mini Robot", "Whistle Pitch"];
+        voiceTypes.forEach((v, index) => {
+            const btn = document.createElement('button');
+            btn.className = "w-full text-[9px] bg-slate-900 p-1 rounded text-slate-300 truncate hover:bg-indigo-900";
+            btn.innerText = `${index + 1}. ${v}`;
+            btn.onclick = () => { currentVoiceEffect = v; alert(`Voice changed to: ${v}`); closeAllPanels(); };
+            voiceContainer.appendChild(btn);
+        });
+
+        const maskContainer = document.getElementById('maskListContainer');
+        const maskEmojis = ["❌ None", "🎭 Classic", "😎 Cool Glass", "🐱 Cat Face", "🦁 Lion King", "👻 Ghost", "🤡 Clown", "🤖 Robot FX", "👽 Alien", "👑 Crown", "🐻 Bear", "🦊 Fox", "🐼 Panda", "🐰 Rabbit", "🐯 Tiger", "🐶 Puppy", "🐷 Piggy", "🐵 Monkey", "👹 Demon", "🎃 Pumpkin", "🎅 Santa", "🥷 Ninja", "🧙 Wizard", "🧛 Vampire", "🧟 Zombie", "🧜 Mermaid", "🦄 Unicorn", "🦅 Eagle", "🦉 Owl", "🐝 Bee", "🦋 Butterfly", "🐢 Turtle", "🐍 Snake", "🦖 Dino", "🐙 Octopus", "🦀 Crab", "🐠 Fish", "🌻 Flower", "🌙 Moon", "⭐ Star"];
+        maskEmojis.forEach((m, index) => {
+            const btn = document.createElement('button');
+            btn.className = "w-full text-[9px] bg-slate-900 p-1 rounded text-slate-300 truncate hover:bg-rose-900";
+            btn.innerText = m.includes("None") ? m : `${index}. ${m.split(" ")[1] || m}`;
+            btn.onclick = () => {
+                const layer = document.getElementById('liveMaskOverlay');
+                if(m.includes("None")) { currentMask = "None"; layer.classList.add('hidden'); }
+                else { currentMask = m.split(" ")[0]; layer.innerText = currentMask; layer.classList.remove('hidden'); }
+                closeAllPanels();
+            };
+            maskContainer.appendChild(btn);
+        });
+const bgContainer = document.getElementById('backgroundListContainer');
+        for(let i=1; i<=50; i++) {
+            const btn = document.createElement('button');
+            btn.className = "w-full text-[9px] bg-slate-900 p-1 rounded text-slate-300 truncate hover:bg-teal-900";
+            btn.innerText = `BG Style ${i}`;
+            btn.onclick = () => {
+                const camBox = document.getElementById('cameraContainer');
+                camBox.className = `video-container camera-box preview-box rounded-2xl flex flex-col items-center justify-center relative overflow-hidden bg-mix-${(i%3)+1}`;
+                closeAllPanels();
+            };
+            bgContainer.appendChild(btn);
+        }
+
+        const effectContainer = document.getElementById('effectListContainer');
+        for(let i=1; i<=70; i++) {
+            const btn = document.createElement('button');
+            btn.className = "w-full text-[9px] bg-slate-900 p-1 rounded text-slate-300 truncate hover:bg-orange-900";
+            btn.innerText = `FX Render ${i}`;
+            btn.onclick = () => {
+                const fxFilters = ['normal', 'beauty', 'vintage', 'pinkish', 'bw', 'cyber', 'warm', 'cool', 'dramatic', 'fade', 'retro', 'neon', 'invert', 'blur', 'bright', 'dark', 'gold', 'cold', 'shadow', 'soft'];
+                applyFilter(fxFilters[i % fxFilters.length]);
+                closeAllPanels();
+            };
+            effectContainer.appendChild(btn);
+        }
+
+        function toggleVerticalPanel(panelId) {
+            const panel = document.getElementById(panelId);
+            const isActive = panel.classList.contains('active');
+            closeAllPanels();
+            if (!isActive) panel.classList.add('active');
+        }
+
+        function closeAllPanels() {
+            document.querySelectorAll('.vertical-panel').forEach(p => p.classList.remove('active'));
+        }
+
+        function saveLiveText() {
+            const val = document.getElementById('textInput').value;
+            const textLayer = document.getElementById('liveTextOverlay');
+            currentText = val;
+            if(val.trim() !== "") {
+                textLayer.innerText = val; textLayer.classList.remove('hidden');
+            } else {
+                textLayer.classList.add('hidden');
+            }
+            closeAllPanels();
+        }
+
+        function applyLiveEmoji(emoji) {
+            const emojiLayer = document.getElementById('liveEmojiOverlay');
+            currentEmoji = emoji; emojiLayer.innerText = emoji; emojiLayer.classList.remove('hidden');
+            closeAllPanels();
+        }
+
+        function clearLiveEmoji() {
+            currentEmoji = ""; document.getElementById('liveEmojiOverlay').classList.add('hidden');
+            closeAllPanels();
+        }
+
+        function changeLayout(layoutType, statusLabel) {
+            currentLayout = layoutType;
+            workspace.className = "w-full h-full gap-1 p-1 relative";
+            workspace.style.aspectRatio = "";
+            document.querySelectorAll('.layout-btn').forEach(btn => { btn.className = "layout-btn w-full bg-slate-900 text-slate-400 text-[8px] py-2 rounded"; });
+            if(event) event.currentTarget.className = "layout-btn w-full bg-cyan-600 text-white text-[8px] py-2 rounded";
+            
+            if (layoutType === 'side-by-side') workspace.classList.add('layout-side-by-side');
+            else if (layoutType === 'top-bottom') workspace.classList.add('layout-top-bottom');
+            else if (layoutType === 'pip') workspace.classList.add('layout-pip');
+            else if (layoutType === 'landscape') { workspace.classList.add('layout-side-by-side'); workspace.style.aspectRatio = "16/9"; }
+            statusText.innerText = statusLabel;
+            closeAllPanels();
+        }
+
+        async function initHardware() {
+            try {
+                if(!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    destAudioNode = audioCtx.createMediaStreamDestination();
+                }
+                localStream = await navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720 }, audio: true });
+                cameraVideo.srcObject = localStream; cameraVideo.classList.remove('hidden');
+                document.getElementById('cameraPlaceholder').classList.add('hidden');
+                videoTrack = localStream.getVideoTracks()[0];
+
+                if(localStream.getAudioTracks().length > 0) {
+                    const micSource = audioCtx.createMediaStreamSource(localStream);
+                    micGainNode = audioCtx.createGain(); micSource.connect(micGainNode); micGainNode.connect(destAudioNode);
+                }
+                document.getElementById('startCamBtn').className = "bg-emerald-950 text-emerald-400 py-2 px-2 rounded-xl text-xs font-bold border border-emerald-800/40 flex items-center justify-center gap-1.5";
+                document.getElementById('startCamBtn').innerHTML = "<i class='fa-solid fa-circle-check'></i> ক্যামেরা ও মাইক রেডি";
+            } catch (err) { alert("ক্যামেরা পারমিশন দিন।"); }
+        }
+
+        function handleVideoUpload(input) {
+            const file = input.files[0];
+            if (file) {
+                if(!audioCtx) { 
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)(); 
+                    destAudioNode = audioCtx.createMediaStreamDestination(); 
+                }
+document.getElementById('mainVideoPlaceholder').classList.add('hidden');
+                mainVideo.src = URL.createObjectURL(file); mainVideo.classList.remove('hidden');
+                document.getElementById('liveIconPanel').classList.remove('hidden');
+                
+                mainVideo.oncanplay = () => {
+                    if (!mainVideoGainNode && audioCtx) {
+                        const videoSource = audioCtx.createMediaElementSource(mainVideo); 
+                        mainVideoGainNode = audioCtx.createGain();
+                        videoSource.connect(mainVideoGainNode); 
+                        mainVideoGainNode.connect(audioCtx.destination); 
+                        mainVideoGainNode.connect(destAudioNode);
+                    }
+                };
+                mainVideo.play().catch(e => console.log(e));
+            }
+        }
+
+        function toggleMainVideoPlay() {
+            const icon = document.getElementById('iconPlayPause').querySelector('i');
+            if (mainVideo.paused) { mainVideo.play(); icon.className = "fa-solid fa-pause text-[10px]"; }
+            else { mainVideo.pause(); icon.className = "fa-solid fa-play text-[10px]"; }
+        }
+
+        function toggleMainVideoMute() {
+            const icon = document.getElementById('iconMute').querySelector('i');
+            if (mainVideo.muted) { mainVideo.muted = false; icon.className = "fa-solid fa-volume-high text-[10px]"; if(mainVideoGainNode) mainVideoGainNode.gain.value = document.getElementById('mainVolSlider').value; }
+            else { mainVideo.muted = true; icon.className = "fa-solid fa-volume-xmark text-[10px]"; if(mainVideoGainNode) mainVideoGainNode.gain.value = 0; }
+        }
+
+        function resetMainVideo() { mainVideo.currentTime = 0; mainVideo.play(); document.getElementById('iconPlayPause').querySelector('i').className = "fa-solid fa-pause text-[10px]"; }
+
+        function updateVolume(type, value) {
+            let percentage = Math.round(value * 100) + '%';
+            if (type === 'mic') { document.getElementById('micVolPreview').innerText = percentage; if (micGainNode) micGainNode.gain.value = value; }
+            else if (type === 'main') { document.getElementById('mainVolPreview').innerText = percentage; if (mainVideoGainNode && !mainVideo.muted) mainVideoGainNode.gain.value = value; }
+        }
+
+        function applyFilter(filterType) { currentFilter = filterType; mainVideo.className = `w-full h-full object-cover filter-${filterType}`; cameraVideo.className = `w-full h-full object-cover filter-${filterType}`; closeAllPanels(); }
+
+        function drawCoverImage(img, x, y, w, h) {
+            if (!img) return;
+            const videoW = img.videoWidth || w; const videoH = img.videoHeight || h; const imgRatio = videoW / videoH; const targetRatio = w / h;
+            let sx, sy, sw, sh;
+            if (imgRatio > targetRatio) { sh = videoH; sw = videoH * targetRatio; sx = (videoW - sw) / 2; sy = 0; }
+            else { sw = videoW; sh = videoW / imgRatio; sx = 0; sy = (videoH - sh) / 2; }
+            ctx.drawImage(img, sx, sy, sw, sh, x, y, w, h);
+        }
+
+        function drawCanvasFrame() {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                const w = recordCanvas.width; const h = recordCanvas.height; ctx.clearRect(0, 0, w, h);
+
+                if (currentFilter === 'beauty') ctx.filter = 'brightness(1.15) contrast(0.95) saturate(1.05)';
+                else if (currentFilter === 'vintage') ctx.filter = 'sepia(0.4) contrast(0.95) brightness(0.95)';
+                else if (currentFilter === 'pinkish') ctx.filter = 'hue-rotate(330deg) saturate(1.1) brightness(1.05)';
+                else if (currentFilter === 'bw') ctx.filter = 'grayscale(1) contrast(1.2)';
+                else if (currentFilter === 'cyber') ctx.filter = 'hue-rotate(90deg) saturate(1.5) brightness(1.1)';
+                else if (currentFilter === 'warm') ctx.filter = 'sepia(0.2) saturate(1.2)';
+                else if (currentFilter === 'cool') ctx.filter = 'hue-rotate(180deg) saturate(1.1)';
+                else if (currentFilter === 'dramatic') ctx.filter = 'contrast(1.4) brightness(0.8)';
+                else if (currentFilter === 'fade') ctx.filter = 'opacity(0.85) saturate(0.8)';
+                else if (currentFilter === 'retro') ctx.filter = 'sepia(0.3) hue-rotate(340deg) saturate(1.3)';
+                else if (currentFilter === 'neon') ctx.filter = 'saturate(2) contrast(1.1)';
+                else if (currentFilter === 'invert') ctx.filter = 'invert(0.9)';
+                else if (currentFilter === 'blur') ctx.filter = 'blur(1px)';
+                else if (currentFilter === 'bright') ctx.filter = 'brightness(1.3)';
+                else if (currentFilter === 'dark') ctx.filter = 'brightness(0.7) contrast(1.1)';
+                else if (currentFilter === 'gold') ctx.filter = 'sepia(0.4) saturate(1.8)';
+                else if (currentFilter === 'cold') ctx.filter = 'saturate(0.7) hue-rotate(190deg)';
+                else if (currentFilter === 'shadow') ctx.filter = 'contrast(1.5)';
+                else if (currentFilter === 'soft') ctx.filter = 'brightness(1.05) saturate(0.95)';
+                else ctx.filter = 'none';
+
+                if (currentLayout === 'side-by-side' || currentLayout === 'landscape') { drawCoverImage(mainVideo, 0, 0, w / 2, h); drawCoverImage(cameraVideo, w / 2, 0, w / 2, h); }
+                else if (currentLayout === 'top-bottom') { drawCoverImage(mainVideo, 0, 0, w, h / 2); drawCoverImage(cameraVideo, 0, h / 2, w, h / 2); }
+                else if (currentLayout === 'pip') { drawCoverImage(mainVideo, 0, 0, w, h); drawCoverImage(cameraVideo, w * 0.65, h * 0.65, w * 0.3, h * 0.3); }
+                ctx.drawImage(logoImg, 20, 20, 50, 50);
+                ctx.filter = 'none';
+                if(currentText !== "") {
+                    ctx.fillStyle = "rgba(0, 0, 0, 0.6)"; ctx.fillRect(w/2 - 160, h - 120, 320, 45);
+                    ctx.fillStyle = "#ffffff"; ctx.font = "bold 22px Arial"; ctx.textAlign = "center";
+                    ctx.fillText(currentText, w/2, h - 90);
+                }
+                if(currentEmoji !== "") { ctx.font = "55px Arial"; ctx.textAlign = "center"; ctx.fillText(currentEmoji, w/3, h/3); }
+                
+                if(currentMask !== "None") {
+                    ctx.font = "70px Arial"; ctx.textAlign = "center";
+                    if (currentLayout === 'side-by-side') ctx.fillText(currentMask, (w / 4) * 3, h / 2.5);
+                    else if (currentLayout === 'top-bottom') ctx.fillText(currentMask, w / 2, (h / 4) * 3);
+                    else ctx.fillText(currentMask, w / 2, h / 2);
+                }
+
+                canvasLoopId = requestAnimationFrame(drawCanvasFrame);
+            }
+        }
+
+        function startCountdown() {
+            if (!mainVideo.src || !localStream) return alert("দয়া করে হার্ডওয়্যার অন করুন এবং মেইন ভিডিও আপলোড করুন!");
+            closeAllPanels(); const overlay = document.getElementById('countdownOverlay'); overlay.classList.remove('hidden');
+            let count = 3; overlay.innerText = count; if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+            
+            let interval = setInterval(() => {
+                count--;
+                if (count > 0) { overlay.innerText = count; } 
+                else { clearInterval(interval); overlay.classList.add('hidden'); startRecording(); }
+            }, 1000);
+        }
+
+        function startRecording() {
+            recordedChunks = [];
+            const quality = document.getElementById('recQuality').value;
+            
+            if (quality === 'high') { recordCanvas.width = 1080; recordCanvas.height = 1920; } 
+            else if (quality === 'medium') { recordCanvas.width = 720; recordCanvas.height = 1280; }
+            else if (quality === '480p') { recordCanvas.width = 480; recordCanvas.height = 854; }
+            else if (quality === '360p') { recordCanvas.width = 360; recordCanvas.height = 640; }
+            else if (quality === '240p') { recordCanvas.width = 240; recordCanvas.height = 426; }
+            else if (quality === '144p') { recordCanvas.width = 144; recordCanvas.height = 256; }
+
+            const canvasStream = recordCanvas.captureStream(30);
+            if (destAudioNode) {
+                const audioTracks = destAudioNode.stream.getAudioTracks();
+                if (audioTracks.length > 0) canvasStream.addTrack(audioTracks[0]);
+            }
+
+            let options = { mimeType: 'video/mp4;codecs=h264,aac' };
+        if (!MediaRecorder.isTypeSupported(options.mimeType)) options = { mimeType: 'video/mp4' };
+        if (!MediaRecorder.isTypeSupported(options.mimeType)) options = { mimeType: 'video/webm;codecs=vp9,opus' };
+        if (!MediaRecorder.isTypeSupported(options.mimeType)) options = { mimeType: 'video/webm' };
+
+            try { mediaRecorder = new MediaRecorder(canvasStream, options); } 
+            catch (e) { mediaRecorder = new MediaRecorder(canvasStream); }
+
+            mediaRecorder.ondataavailable = function(e) {
+    if (e.data && e.data.size > 0) {
+        recordedChunks.push(e.data);
+    }
+};
+mediaRecorder.onstop = () => {
+        // ১. রেকর্ডার আসলে কোন ফরম্যাটে রেকর্ড করেছে তা নিজে থেকে খুঁজে নেওয়া
+        const actualMimeType = mediaRecorder.mimeType || 'video/webm';
+        const blob = new Blob(recordedChunks, { type: actualMimeType });
+        const url = URL.createObjectURL(blob);
+        
+        // ২. ফরম্যাট অনুযায়ী সঠিক এক্সটেনশন (.mp4 নাকি .webm) নির্ধারণ করা
+        const extension = actualMimeType.includes('mp4') ? '.mp4' : '.webm';
+        const fileName = 'sada2TV' + extension;
+
+        // ৩. অ্যাপের ভেতরের প্লেয়ারে ভিডিও প্রিভিউ লোড করা
+        mainVideo.srcObject = null; 
+        mainVideo.src = url;
+        mainVideo.controls = true; 
+        mainVideo.play();
+
+        // ৪. আগের বাটন থাকলে তা পরিষ্কার করা
+        const oldContainer = document.getElementById('actionButtonsContainer');
+        if (oldContainer) oldContainer.remove();
+
+        const container = document.createElement('div');
+        container.id = 'actionButtonsContainer';
+        container.style.display = 'flex';
+        container.style.justifyContent = 'center';
+        container.style.marginTop = '20px';
+        container.style.padding = '10px';
+
+        // ৫. নিখুঁত ডাউনলোড বাটন তৈরি
+        const downloadBtn = document.createElement('a');
+        downloadBtn.innerHTML = "&#128229; ডাউনলোড করুন"; 
+        downloadBtn.href = url;
+        downloadBtn.download = fileName; 
+        
+        // বাটনের সুন্দর ডিজাইন
+        downloadBtn.style.padding = '14px 28px';
+        downloadBtn.style.background = '#28a745'; 
+        downloadBtn.style.color = '#fff';
+        downloadBtn.style.textDecoration = 'none';
+        downloadBtn.style.borderRadius = '8px';
+        downloadBtn.style.fontWeight = 'bold';
+        downloadBtn.style.display = 'flex';
+        downloadBtn.style.alignItems = 'center';
+        downloadBtn.style.gap = '8px';
+        downloadBtn.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
+
+        container.appendChild(downloadBtn);
+        document.body.appendChild(container);
+
+        recordedChunks = []; 
+    };
+
+            mainVideo.currentTime = 0;
+            mainVideo.play().then(() => {
+                mediaRecorder.start();
+                document.getElementById('recDot').classList.remove('hidden');
+                document.getElementById('recTimer').classList.remove('hidden');
+                document.getElementById('recBtn').disabled = true;
+                document.getElementById('recBtn').innerText = "রেকর্ডিং হচ্ছে...";
+                document.getElementById('stopRecBtn').disabled = false;
+                document.getElementById('stopRecBtn').className = "bg-red-600 text-white px-3 rounded-xl text-xs font-bold";
+
+                drawCanvasFrame();
+                startTimer();
+            }).catch(err => { alert("মেইন ভিডিও প্লে করতে সমস্যা হচ্ছে।"); });
+        }
+
+        function stopRecording() {
+            if (mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop();
+            if (canvasLoopId) cancelAnimationFrame(canvasLoopId);
+            mainVideo.pause(); stopTimer();
+
+            document.getElementById('recDot').classList.add('hidden');
+            document.getElementById('recTimer').classList.add('hidden');
+            document.getElementById('recBtn').disabled = false;
+            document.getElementById('recBtn').innerHTML = "ডুয়েট রেকর্ড";
+            document.getElementById('stopRecBtn').disabled = true;
+            document.getElementById('stopRecBtn').className = "bg-slate-800 text-slate-500 px-3 rounded-xl text-xs font-bold";
+        }
+
+        function startTimer() {
+            secondsRecorded = 0; const timerEl = document.getElementById('recTimer'); timerEl.innerText = "00:00";
+            timerInterval = setInterval(() => {
+                secondsRecorded++;
+                const mins = String(Math.floor(secondsRecorded / 60)).padStart(2, '0');
+                const secs = String(secondsRecorded % 60).padStart(2, '0');
+                timerEl.innerText = `${mins}:${secs}`;
+            }, 1000);
+        }
+
+        function stopTimer() { if (timerInterval) clearInterval(timerInterval); }
+    </script>
+<script>
+    const banner = document.getElementById('banner');
+    const body = document.body;
+
+    const items = [
+        { bg: 'linear-gradient(45deg, #FF5733, #FFC300)', body: '#05070f' },
+        { bg: 'linear-gradient(45deg, #33FF57, #3357FF)', body: '#1a1a2e' },
+        { bg: 'linear-gradient(45deg, #FF33A8, #8D33FF)', body: '#16213e' },
+        { bg: 'linear-gradient(45deg, #33FFF6, #FF3333)', body: '#0f3460' },
+        { bg: 'linear-gradient(45deg, #F3FF33, #33FF8D)', body: '#2c3e50' },
+        { bg: 'linear-gradient(45deg, #8E44AD, #3498DB)', body: '#1e272e' },
+    ];
+
+    let i = 0;
+    setInterval(() => {
+        banner.style.background = items[i].bg;
+        body.style.backgroundColor = items[i].body;
+        i = (i + 1) % items.length;
+    }, 1000); // ১ সেকেন্ড পরপর পরিবর্তন হবে
+
+
+// বাটন চাপলে রেকর্ডিং বন্ধ হবে
+stopRecBtn.addEventListener('click', () => {
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+        mediaRecorder.stop();
+    }
+});
+    </script>
+ </body>
+</html>
